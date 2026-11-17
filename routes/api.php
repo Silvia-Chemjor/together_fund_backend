@@ -4,12 +4,12 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupMemberController;
+use App\Http\Controllers\LogController;
 use App\Http\Controllers\MpesaController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ResendVerificationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerificationController;
-use App\Http\Controllers\WithdrawController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,10 +28,7 @@ Route::post('/mpesa/callback', [MpesaController::class, 'callback']);
 //Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me',[AuthController::class, 'userInfo']);
-
-    Route::post('/withdraws', [WithdrawController::class, 'store']);
-    Route::get('/withdraws', [WithdrawController::class, 'index']);
-    Route::get('/withdraws/{id}', [WithdrawController::class, 'show']);
+    Route::get('/read-logs', [LogController::class, 'readAll']);
 
     Route::get('/mpesa/token', [MpesaController::class, 'getToken']);
     Route::post('/mpesa/stk-push', [MpesaController::class, 'stkPush']);

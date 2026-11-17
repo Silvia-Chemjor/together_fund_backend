@@ -3,56 +3,105 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
+use App\Models\Log;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
-    public function readAll(){
-        try{
-            $payments = Payment::all();
-            return response()->json([
-                'payments'=>$payments
-            ],200);
-        }catch(\Exception $e){
-        return response()->json([
-            'message'=>'Failed to fetch.',
-            'error'=>$e->getMessage()
-        ],500);
+    // View all payments
+    public function readAll()
+    {
+        try {
+            $payments = Payment::with([
+                'user:id,name',
+                'group:id,name'
+            ])->latest()->get();
 
-        }
-    }
-     public function read($id){
-        try{
-            $payment = Payment::where('id',$id) ->first();
             return response()->json([
-                'payment'=>$payment
-            ],200);
-        }catch(\Exception $e){
-        return response()->json([
-            'message'=>'Failed to fetch.',
-            'error'=>$e->getMessage()
-        ],500);
-        }
+                'payments' => $payments
+            ], 200);
 
-    }
-    public function deletePayment($id){
-        try{
-            $payment =Payment::where('id',$id)->first();
-            if($payment){
-                $payment -> delete();
-                return response()->json("Payment delete successfully.");
-            }
-            else{
-                return response()->json("Payment not found");
-            }
-        }catch(\Exception $e){
-        return response()->json([
-            'message'=>'Failed to delete',
-            'error'=>$e->getMessage()
-        ],500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch payments.'
+            ], 500);
         }
     }
-    public function myContributions(Request $request){
+
+    // View one payment
+    public function read($id)
+    {
+        try {
+            $payment = Payment::where('id', $id)->first();
+
+            if (!$payment) {
+                return response()->json([
+                    'message' => 'Payment not found.'
+                ], 404);
+            }
+
+            return response()->json([
+                'payment' => $payment
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Delete a payment record
+    public function deletePayment($id)
+    {
+        try {
+            $payment = Payment::with([
+                'user:id,name',
+                'group:id,name'
+            ])->where('id', $id)->first();
+
+            if (!$payment) {
+                return response()->json([
+                    'message' => 'Payment not found.'
+                ], 404);
+            }
+
+            // Get the logged-in admin
+            $user = Auth::user();
+
+            // Save payment details before deleting
+            $memberName = $payment->user ? $payment->user->name : 'Unknown member';
+            $groupName = $payment->group ? $payment->group->name : 'Unknown group';
+
+            $payment->delete();
+
+            // Record activity
+            Log::create([
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'role' => $user->role ? $user->role->name : 'Unknown',
+                'action' => 'Deleted contribution record for ' . $memberName . ' in group: ' . $groupName,
+                'type' => 'Contribution',
+                'status' => 'Success'
+            ]);
+
+            return response()->json([
+                'message' => 'Payment deleted successfully.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete payment.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // View contributions belonging to the logged-in user
+    public function myContributions(Request $request)
+    {
         try {
             $payments = Payment::with('group')
                 ->where('user_id', $request->user()->id)

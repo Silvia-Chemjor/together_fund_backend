@@ -12,7 +12,7 @@ class UserController extends Controller
         $request->validate([
             'name'=>'required|string',
             'email'=>'required|email',
-            'phone'=>'required',
+            'phone'=>'string|max:15|unique:users,phone',
             'password'=>'required|min:3|confirmed',
             'role_id'=>'required|integer|exists:roles,id',
             'user_image'=>'nullable|image|mimes:jpg,png,jpeg|max:2048',         
@@ -79,7 +79,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string',
             'email' => 'required|email',
-            'phone' => 'required',
+            'phone' => 'string|max:15',
             'password' => 'nullable|min:3|confirmed',
             'role_id' => 'required|integer|exists:roles,id',
             'user_image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',

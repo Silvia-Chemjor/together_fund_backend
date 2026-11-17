@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Group extends Model
 {
@@ -21,7 +22,7 @@ class Group extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    // Group membership requests and members
+    // Group members
     public function members(): HasMany
     {
         return $this->hasMany(GroupMember::class);

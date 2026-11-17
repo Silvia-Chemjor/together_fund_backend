@@ -15,6 +15,7 @@ class Payment extends Model
         'amount',
         'status',
         'idempotency_key',
+        'payment_type'
     ];
 
     public function user()
