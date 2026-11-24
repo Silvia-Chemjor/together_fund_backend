@@ -14,8 +14,7 @@ use Illuminate\Support\Facades\URL;
 class AuthController extends Controller
 {
     // Register a new user
-    public function register(Request $request)
-    {
+    public function register(Request $request){
         $request->validate([
             'name' => 'required|string',
             'phone' => 'required|string|max:15|unique:users,phone',
@@ -80,8 +79,7 @@ class AuthController extends Controller
     }
 
     // Login user
-    public function login(Request $request)
-    {
+    public function login(Request $request){
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|min:3',
@@ -153,28 +151,27 @@ class AuthController extends Controller
     }
 
     // Logout user
-    public function logout(Request $request)
-    {
+    public function logout(Request $request){
         $request->user()->currentAccessToken()->delete();
 
         return response()->json('Logout success');
     }
 
     // Get logged-in user information
-    public function userInfo(Request $request)
-    {
-        try {
-            $user = Auth::user();
+    public function userInfo(Request $request){
+    try {
+        $user = $request->user()->load('role');
 
-            return response()->json([
-                'user' => $user
-            ]);
+        return response()->json([
+            'user' => $user,
+            'abilities' => $user->abilities()
+        ], 200);
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error getting user info.',
-                'error' => $e->getMessage()
-            ]);
-        }
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error getting user info.',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 }

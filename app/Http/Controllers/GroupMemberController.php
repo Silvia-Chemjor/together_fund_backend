@@ -440,4 +440,59 @@ class GroupMemberController extends Controller
             ], 500);
         }
     }
+
+
+    public function leaveGroup($groupId){
+        try {
+            $userId = Auth::id();
+
+            if (!$userId) {
+                return response()->json([
+                    'message' => 'Please login first'
+                ], 401);
+            }
+
+            // Find the logged-in user's membership in this group
+            $member = GroupMember::with(['group', 'user'])
+                ->where('group_id', $groupId)
+                ->where('user_id', $userId)
+                ->first();
+
+            if (!$member) {
+                return response()->json([
+                    'message' => 'You are not a member of this group'
+                ], 404);
+            }
+
+            $groupName = $member->group
+                ? $member->group->name
+                : 'Unknown group';
+
+            $user = Auth::user();
+
+            // Remove only the logged-in user's membership
+            $member->delete();
+
+            // Record activity
+            Log::create([
+                'user_id' => $userId,
+                'user_name' => $user->name,
+                'role' => $user->role ? $user->role->name : 'Unknown',
+                'action' => 'Left group: ' . $groupName,
+                'type' => 'Group Management',
+                'status' => 'Success'
+            ]);
+
+            return response()->json([
+                'message' => 'You have left the group successfully'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to leave group',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

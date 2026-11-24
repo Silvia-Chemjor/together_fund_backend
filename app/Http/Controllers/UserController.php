@@ -77,12 +77,12 @@ class UserController extends Controller
     }
     public function updateUser($id, Request $request){
         $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email',
-            'phone' => 'string|max:15',
-            'password' => 'nullable|min:3|confirmed',
-            'role_id' => 'required|integer|exists:roles,id',
-            'user_image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
+            'name' => 'nullable|string',
+            'email' => 'nullable|email',
+            'phone' => 'nullable|string|max:15',
+            'password' => 'nullable|min:3',
+            'role_id' => 'nullable|integer|exists:roles,id',
+            'user_image' => 'nullable|image|mimes:jpg,png,jpeg|max:5120',
         ]);
 
         $user = User::findOrFail($id);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Group;
 use App\Models\Payment;
 use App\Models\Log;
 use Illuminate\Http\Request;
@@ -10,24 +11,38 @@ use Illuminate\Support\Facades\Auth;
 class PaymentController extends Controller
 {
     // View all payments
-    public function readAll()
-    {
-        try {
-            $payments = Payment::with([
-                'user:id,name',
-                'group:id,name'
-            ])->latest()->get();
+    public function readAll(Request $request)
+{
+    try {
+        $user = $request->user();
 
-            return response()->json([
-                'payments' => $payments
-            ], 200);
+        // Get groups created by the logged-in treasurer
+        $groups = Group::where('created_by', $user->id)
+            ->with([
+                'members.user:id,name,email,phone'
+            ])
+            ->get();
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to fetch payments.'
-            ], 500);
-        }
+        // Get payments belonging to those groups
+        $payments = Payment::with([
+            'user:id,name',
+            'group:id,name'
+        ])
+        ->whereIn('group_id', $groups->pluck('id'))
+        ->latest()
+        ->get();
+
+        return response()->json([
+            'groups' => $groups,
+            'payments' => $payments
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Failed to fetch contributions.'
+        ], 500);
     }
+}
 
     // View one payment
     public function read($id)

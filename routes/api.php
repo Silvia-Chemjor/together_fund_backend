@@ -6,7 +6,9 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupMemberController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\MpesaController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReminderController;
 use App\Http\Controllers\ResendVerificationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerificationController;
@@ -63,12 +65,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/read-group-members', [GroupMemberController::class, 'readAllMembers']);
     Route::get('/read-group-member/{id}', [GroupMemberController::class, 'readGroupMember']);
     Route::delete('/delete-group-member/{id}', [GroupMemberController::class, 'deleteGroupMember']);
+    Route::delete('/leave-group/{groupId}', [GroupMemberController::class, 'leaveGroup']);
     Route::get('/my-joined-groups', [GroupMemberController::class, 'myJoinedGroups']);
 
     Route::get('/contributions', [PaymentController::class, 'readAll']);
     Route::get('/contribution/{id}', [PaymentController::class, 'read']);
     Route::delete('/delete-payment/{id}', [PaymentController::class, 'deletePayment']);      
     Route::get('/my-contributions', [PaymentController::class, 'myContributions']);
+
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+
+    Route::get('/reminders', [ReminderController::class,'index']);
+    Route::post('/send', [ReminderController::class,'sendReminder']);
+
     });
 
 
